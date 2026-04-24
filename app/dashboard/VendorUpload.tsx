@@ -43,7 +43,8 @@ export default function VendorUpload() {
     setMessage('');
     setResults(null);
 
-    const res = await fetch('/api/upload', {
+    // 🔁 Temporary debug endpoint – shows raw PDF.co data
+    const res = await fetch('/api/debug-upload', {
       method: 'POST',
       body: formData,
     });
@@ -52,15 +53,18 @@ export default function VendorUpload() {
     if (data.error) {
       setMessage(data.error);
     } else {
-      setMessage('File processed successfully!');
-      setResults(data.result);
+      // The debug endpoint returns { success, rawParserResponse, uploadedUrl }
+      // We'll display the raw JSON as a string so you can copy it directly
+      setMessage('Debug: raw PDF.co data received. Copy the output below.');
+      // Store the entire response so we can display it
+      setResults(data); // This won't match the expected shape, but we'll show it as JSON
     }
     setUploading(false);
   };
 
   return (
     <div className="rounded-xl border bg-white p-6 shadow-sm">
-      <h2 className="text-xl font-semibold text-gray-900">Upload Vendor Statement</h2>
+      <h2 className="text-xl font-semibold text-gray-900">Upload Vendor Statement (Debug Mode)</h2>
       <form onSubmit={handleUpload} className="mt-4 space-y-4">
         <div>
           <label className="block text-sm font-medium text-gray-700">Select PDF</label>
@@ -76,46 +80,18 @@ export default function VendorUpload() {
           disabled={uploading}
           className="rounded-md bg-indigo-600 px-6 py-2 text-sm font-semibold text-white hover:bg-indigo-700 disabled:opacity-50"
         >
-          {uploading ? 'Uploading...' : 'Upload & Match'}
+          {uploading ? 'Uploading...' : 'Upload & Debug'}
         </button>
         {message && <p className="text-sm text-gray-600">{message}</p>}
       </form>
 
-      {results && results.matches && (
+      {/* Display the raw JSON returned by the debug endpoint */}
+      {results && (
         <div className="mt-6 space-y-4">
-          <h3 className="text-lg font-semibold text-gray-900">Matching Results</h3>
-          <div className="overflow-x-auto">
-            <table className="min-w-full text-sm">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-3 py-2 text-left font-medium text-gray-600">Invoice #</th>
-                  <th className="px-3 py-2 text-left font-medium text-gray-600">Amount</th>
-                  <th className="px-3 py-2 text-left font-medium text-gray-600">Status</th>
-                  <th className="px-3 py-2 text-left font-medium text-gray-600">Matched Bill</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-200">
-                {results.matches.map((matchResult, idx) => (
-                  <tr key={idx} className={matchResult.match ? 'bg-green-50' : 'bg-red-50'}>
-                    <td className="px-3 py-2">{matchResult.lineItem.invoiceNumber || 'N/A'}</td>
-                    <td className="px-3 py-2">{matchResult.lineItem.amount?.toFixed(2) || 'N/A'}</td>
-                    <td className="px-3 py-2">
-                      {matchResult.match ? (
-                        <span className="text-green-700 font-medium">Matched</span>
-                      ) : (
-                        <span className="text-red-700 font-medium">Unmatched</span>
-                      )}
-                    </td>
-                    <td className="px-3 py-2">
-                      {matchResult.match
-                        ? `${matchResult.match.docNumber} (${matchResult.match.amount?.toFixed(2)})`
-                        : '—'}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <h3 className="text-lg font-semibold text-gray-900">Raw PDF.co Response</h3>
+          <pre className="overflow-x-auto rounded-lg bg-gray-900 p-4 text-sm text-green-400">
+            {JSON.stringify(results, null, 2)}
+          </pre>
         </div>
       )}
     </div>
