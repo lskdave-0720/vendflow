@@ -24,7 +24,10 @@ interface Match {
 export default function VendorUpload() {
   const [uploading, setUploading] = useState(false);
   const [message, setMessage] = useState('');
-  const [results, setResults] = useState<{ lineItems: LineItem[]; matches: Match[] } | null>(null);
+  const [results, setResults] = useState<{
+    lineItems?: LineItem[];
+    matches?: Match[];
+  } | null>(null);
 
   const handleUpload = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -73,14 +76,14 @@ export default function VendorUpload() {
           disabled={uploading}
           className="rounded-md bg-indigo-600 px-6 py-2 text-sm font-semibold text-white hover:bg-indigo-700 disabled:opacity-50"
         >
-          {uploading ? 'Uploading...' : 'Upload & Extract'}
+          {uploading ? 'Uploading...' : 'Upload & Match'}
         </button>
         {message && <p className="text-sm text-gray-600">{message}</p>}
       </form>
 
-      {results && (
+      {results && results.matches && (
         <div className="mt-6 space-y-4">
-          <h3 className="text-lg font-semibold text-gray-900">Results</h3>
+          <h3 className="text-lg font-semibold text-gray-900">Matching Results</h3>
           <div className="overflow-x-auto">
             <table className="min-w-full text-sm">
               <thead className="bg-gray-50">
