@@ -34,7 +34,7 @@ export async function POST(request: NextRequest) {
   try {
     const arrayBuffer = await file.arrayBuffer();
 
-    // 1. Extract (using mock)
+    // 1. Extract (real PDF.co)
     const extractedData = await extractPDF(arrayBuffer, file.name);
     const lineItems = parseExtractedData(extractedData);
 
@@ -68,7 +68,7 @@ export async function POST(request: NextRequest) {
     // 4. Match
     const matchResults = matchLineItems(lineItems, openBills);
 
-    // 5. Store & return
+    // 5. Store & return (including raw extractedData)
     await supabase.from('document_jobs').insert({
       user_id: user.id,
       file_key: file.name,
@@ -83,10 +83,13 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      message: 'File processed. Matches found.',
+      message: lineItems.length > 0
+        ? 'File processed. Matches found.'
+        : 'Extraction done, but no line items found. Raw data attached.',
       result: {
         lineItems,
         matches: matchResults,
+        extractedData,   // <-- raw PDF.co response for parser debugging
       },
     });
   } catch (error) {
